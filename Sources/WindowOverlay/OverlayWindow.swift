@@ -11,7 +11,14 @@ import SwiftUI
 enum OverlayWindow {
     static var allWindows: [UIWindowScene: UIWindow] = [:]
     
-    static func present<Content>(on windowScene: UIWindowScene, isInteractive: Bool, view: () -> Content) where Content: View {
+    static func present<Content>(
+        on windowScene: UIWindowScene,
+        isInteractive: Bool,
+        backgroundColor: UIColor,
+        modalTransitionStyle: UIModalTransitionStyle,
+        windowLevel: UIWindow.Level,
+        view: () -> Content
+    ) where Content: View {
         guard allWindows[windowScene] == nil else {
             return
         }
@@ -21,12 +28,12 @@ enum OverlayWindow {
         allWindows[windowScene] = window
         
         let hostingController = UIHostingController(rootView: view())
-        hostingController.view.backgroundColor = .clear
-        hostingController.modalTransitionStyle = .crossDissolve
+        hostingController.view.backgroundColor = backgroundColor
+        hostingController.modalTransitionStyle = modalTransitionStyle
         hostingController.modalPresentationStyle = .fullScreen
         
         window.rootViewController = UIViewController(nibName: nil, bundle: nil)
-        window.windowLevel = .alert
+        window.windowLevel = windowLevel
         window.backgroundColor = .clear
         window.overrideUserInterfaceStyle = UITraitCollection.current.userInterfaceStyle
 

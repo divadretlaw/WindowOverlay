@@ -36,7 +36,11 @@ public extension View {
     }
 }
 
-struct WindowOverlayViewModifier<OverlayContent>: ViewModifier where OverlayContent: View {
+private struct WindowOverlayViewModifier<OverlayContent>: ViewModifier where OverlayContent: View {
+    @Environment(\.windowOverlayModalTransitionStyle) var modalTransitionStyle
+    @Environment(\.windowOverlayBackgroundColor) var backgroundColor
+    @Environment(\.windowOverlayLevel) var windowLevel
+    
     var isPresented: Binding<Bool>
     var windowScene: UIWindowScene
     var isInteractive: Bool
@@ -47,18 +51,28 @@ struct WindowOverlayViewModifier<OverlayContent>: ViewModifier where OverlayCont
             content
                 .onChange(of: isPresented.wrappedValue) { value in
                     if value {
-                        OverlayWindow.present(on: windowScene, isInteractive: isInteractive) {
-                            overlayContent()
-                        }
+                        OverlayWindow.present(
+                            on: windowScene,
+                            isInteractive: isInteractive,
+                            backgroundColor: backgroundColor,
+                            modalTransitionStyle: modalTransitionStyle,
+                            windowLevel: windowLevel,
+                            view: overlayContent
+                        )
                     } else {
                         OverlayWindow.dismiss(on: windowScene)
                     }
                 }
                 .onAppear {
                     guard isPresented.wrappedValue else { return }
-                    OverlayWindow.present(on: windowScene, isInteractive: isInteractive) {
-                        overlayContent()
-                    }
+                    OverlayWindow.present(
+                        on: windowScene,
+                        isInteractive: isInteractive,
+                        backgroundColor: backgroundColor,
+                        modalTransitionStyle: modalTransitionStyle,
+                        windowLevel: windowLevel,
+                        view: overlayContent
+                    )
                 }
                 .onDisappear {
                     OverlayWindow.dismiss(on: windowScene)
@@ -67,9 +81,14 @@ struct WindowOverlayViewModifier<OverlayContent>: ViewModifier where OverlayCont
             content
                 .onReceive(Just(isPresented.wrappedValue)) { value in
                     if value {
-                        OverlayWindow.present(on: windowScene, isInteractive: isInteractive) {
-                            overlayContent()
-                        }
+                        OverlayWindow.present(
+                            on: windowScene,
+                            isInteractive: isInteractive,
+                            backgroundColor: backgroundColor,
+                            modalTransitionStyle: modalTransitionStyle,
+                            windowLevel: windowLevel,
+                            view: overlayContent
+                        )
                     } else {
                         // Cannot use this to hide the alert on iOS 13 because `onReceive`
                         // will get called for all alerts if there are multiple on a single view
